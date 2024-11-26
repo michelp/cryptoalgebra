@@ -30,7 +30,7 @@ Incidence, however, now requires two steps to get from one vertex to another, bu
 
 ![Projecting Adjacency from Incidence Matrices](./docs/Projection.png)
 
-# Blocktime Addressing of Blocks, Transactions, and Outputs
+## Blocktime Addressing of Blocks, Transactions, and Outputs
 
 The bitcoin blockchain is an immutable record of past transactions. This immutability confers onto it a *total order* of blocks, transactions, and outputs. This order is exploited by CoinBLAS by storing the rows and columns of matrices *in the same immutable order*. For the purposes of CoinBLAS, this order is called "Blocktime," not to be confused with the concept of how long it takes for the network to produce new blocks often referred to as Block Time, which isn't very interesting in this context so I'm repurposing the word.
 
@@ -68,7 +68,7 @@ To give an idea of how the semiring works, consider a multi-party flow shown bel
 
 ![Multi-party Incidence Flow](./docs/AdjacentFlow.png)
 
-# Common Input Ownership
+## Common Input Ownership
 
 Any bitcoin user can make public key addresses at will, so in theory, it's hard to track back to the person who "owns" bitcoin. However, there are some heuristics for clustering objects and one of the most used heuristics is called common-input-ownership.
 
