@@ -84,6 +84,14 @@ We'll call this new relationship "SS" for Sender to Sender. The result we want i
 
 The "SS" matrix now contains a row and a column for every sender and an edge from every sender to every other sender they have shared transactions with as the sender. The `select()` function is used to remove the diagonal "self-edges" that every sender would end up with back to themselves and are uninteresting for this problem. The `PLUS_FIRST` semiring says to sum common edges between any two senders but just using the left matrix, since the values in the transpose of the matrix are redundant.
 
+# Ethereum
+
+## Different Structure Same Algebra
+
+Ethereum, unlike Bitcoin, uses an account-based model rather than a UTXO model. Each account has a balance and can send transactions directly to other accounts. Despite this difference, Ethereum's transactions still form a graph that can be represented using incidence matrices.
+
+In Ethereum, each transaction can be seen as an edge connecting two vertices: the sender and the receiver. By constructing incidence matrices where rows represent senders and columns represent receivers, we can analyze the flow of value within the Ethereum network. This approach allows us to apply similar algebraic techniques to study transaction patterns, detect anomalies, and understand the overall structure of the Ethereum blockchain.
+
 # The Future
 
 CoinBLAS as it is today is just a starting point, a platform for advanced analysis and computation with modern, high-performance hardware. It provides a few building blocks of Bitcoin graph structure to get started. There is a whole world of complex analysis out there, and the blocks provided by CoinBLAS and sparse matrix linear algebra form the basis for an entirely new way of thinking about Graph analysis.
@@ -94,10 +102,3 @@ This is a fun diagram to get into thinking The GraphBLAS way. On the left is a d
 
 The idea here is that complex graphs can be broken down into orthogonal spectral components that describe the local structural characteristics of graphs and subgraphs. These spectral components can then form the actual data inputs to more advanced deep and statistical machine learning models. This entire body of work has been done in the language of Linear Algebra and represents an exciting new way of doing component analysis on complex graphs. Future releases of CoinBLAS will include spectral analysis functions like this.
 
-# Ethereum
-
-## Different Structure Same Algebra
-
-Ethereum, unlike Bitcoin, uses an account-based model rather than a UTXO model. Each account has a balance and can send transactions directly to other accounts. Despite this difference, Ethereum's transactions still form a graph that can be represented using incidence matrices.
-
-In Ethereum, each transaction can be seen as an edge connecting two vertices: the sender and the receiver. By constructing incidence matrices where rows represent senders and columns represent receivers, we can analyze the flow of value within the Ethereum network. This approach allows us to apply similar algebraic techniques to study transaction patterns, detect anomalies, and understand the overall structure of the Ethereum blockchain.
