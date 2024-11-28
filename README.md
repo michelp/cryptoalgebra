@@ -4,39 +4,43 @@ author: Michel Pelletier
 date: today
 ---
 
-# The Algebra of Cryptocurrency
+# The Linear Algebra of Cryptocurrency
 
-Cryptocurrency transactions form a graph that can be represented using Linear Algebra as adjacency and incidence matrices. Interchain links can be represented as incidence matrices that bridge two chains and can project chain-crossing transactions as a single graph for analysis.
+There are numerous mathematical tools utilized in cryptocurrency, particularly in the realms of cryptographic functionality and transaction security. Linear Algebra is an additional valuable tool that can be applied to the graph structures inherent in transaction networks.
 
-This paper introduces an algebraic definition for Bitcoin as a set of sparse matrices. Some matrices connect nodes to similar nodes, an adjacency matrix, and some connect nodes in one set to nodes in another, an incidence matrix.
+Cryptocurrency transactions naturally form a graph that can be effectively represented using Linear Algebra through adjacency and incidence matrices. Furthermore, interchain links can be modeled as incidence matrices that bridge multiple blockchain networks, allowing chain-crossing transactions to be projected into a unified graph for comprehensive analysis.
+
+This paper presents an algebraic framework for Bitcoin by defining it as a collection of sparse matrices. Certain matrices serve to connect nodes with similar attributes, forming adjacency matrices, while others link nodes from distinct sets, creating incidence matrices. This algebraic representation facilitates a deeper understanding of the underlying transaction networks and enables advanced analytical techniques.
 
 # Bitcoin
 
-Bitcoin presents a particularly stubborn graph analysis problem: transactions with multiple inputs, outputs, and addresses can be created at will by the network's users forming a very large sparse [Hypergraph](https://en.wikipedia.org/wiki/Hypergraph) bundling previous transaction outputs into new transaction inputs.
+Bitcoin presents a particularly challenging graph analysis problem. Transactions with multiple inputs, outputs, and addresses can be created at will by the network's users, forming an extensive and sparse [Hypergraph](https://en.wikipedia.org/wiki/Hypergraph) that bundles previous transaction outputs into new transaction inputs.
 
-The Bitcoin hypergraph is extremely divergent and has a high [Graph Diameter](https://en.wikipedia.org/wiki/Distance_(graph_theory)). As bitcoin is (in a sense) indestructible, value flows forward in time through many transactions on its way from one address to many others, and each transaction along the way can branch into many sub-paths. Starting from one output and traversing the graph explodes the number of transactions visited in order to search the blockchain.
+The Bitcoin hypergraph is highly divergent and possesses a significant [Graph Diameter](https://en.wikipedia.org/wiki/Distance_(graph_theory)). Since Bitcoin is effectively indestructible, value continuously flows forward in time through numerous transactions, moving from one address to many others. Each transaction along the path can branch into multiple sub-paths, leading to an exponential increase in the number of transactions to be visited when traversing the graph to search the blockchain.
+
+This complexity poses significant challenges for graph analysis algorithms, as the vast and intricate network of transactions makes it difficult to track the flow of value, identify patterns, and detect anomalies. Efficient traversal and analysis techniques are essential to manage the scale and depth of the Bitcoin transaction graph, enabling more effective monitoring and understanding of the cryptocurrency's underlying dynamics. Advanced methods such as matrix factorization, clustering, and dimensionality reduction can be employed to simplify and extract meaningful insights from this expansive hypergraph.
 
 ## Matrix Multiplication is Graph Traversal
-
-The core operation of any graph algorithm is taking a "step" from a vertex to its neighbors. In the "Matrix View" of a graph, this operation is Matrix Multiplication. Therefore, repeated multiplication on the same matrix *traverses* the graph in a [Breadth First Search](https://en.wikipedia.org/wiki/Breadth-first_search).
+The core operation of any graph algorithm involves taking a "step" from a vertex to its neighbors. In the "Matrix View" of a graph, this operation is represented by matrix multiplication. Consequently, repeated multiplication of the same matrix effectively traverses the graph in a [Breadth-First Search](https://en.wikipedia.org/wiki/Breadth-first_search) manner.
 
 ![Graph Adjacency Matrix](./docs/Adjacency.png)
 
-Adjacency matrices can represent simple directed and undirected graphs between identical kinds of things. The bitcoin graph, however, is a many-to-many combination of inputs and outputs to transactions, the inputs being the outputs of previous transactions. Bitcoin is actually a [Hypergraph](https://en.wikipedia.org/wiki/Hypergraph) and can be constructed using two [Incidence Matrices](https://en.wikipedia.org/wiki/Incidence_matrix).
+Adjacency matrices are capable of representing simple directed and undirected graphs between identical types of nodes. However, the Bitcoin graph is more complex, involving a many-to-many relationship between inputs and outputs of transactions, where inputs are the outputs of previous transactions. Bitcoin's transaction structure forms a [Hypergraph](https://en.wikipedia.org/wiki/Hypergraph), which can be constructed using two [Incidence Matrices](https://en.wikipedia.org/wiki/Incidence_matrix).
 
 ![Projecting Adjacency from Incidence Matrices](./docs/Incidence.png)
 
-Incidence, however, now requires two steps to get from one vertex to another, but no worries, incidence matrices can be *projected* to an adjacency matrix using, you guessed it, Matrix Multiplication:
+While incidence requires two steps to navigate from one vertex to another, this is manageable because incidence matrices can be *projected* into an adjacency matrix through matrix multiplication. This projection simplifies the traversal process and allows for more efficient graph analysis.
 
 ![Projecting Adjacency from Incidence Matrices](./docs/Projection.png)
 
+By utilizing matrix multiplication to project incidence matrices into an adjacency matrix, we streamline the process of traversing complex hypergraphs like Bitcoin's transaction network. This method not only enhances the efficiency of graph algorithms but also provides deeper insights into the interconnected nature of cryptocurrency transactions.
+
 ## Blocktime Addressing of Blocks, Transactions, and Outputs
+The Bitcoin blockchain serves as an immutable ledger of all past transactions. This immutability establishes a *total order* among blocks, transactions, and outputs. We leverage this order by organizing the rows and columns of matrices *according to the same immutable sequence*. This ordering method is termed "Blocktime," differentiating it from the commonly referenced concept of Block Time, which denotes the duration required for the network to generate new blocks. In this context, "Blocktime" specifically refers to the sequential time-directed arrangement of blockchain data, thus repurposing the term for our analytical framework.
 
-The bitcoin blockchain is an immutable record of past transactions. This immutability confers onto it a *total order* of blocks, transactions, and outputs. This order is exploited by storing the rows and columns of matrices *in the same immutable order*. This order is called "Blocktime," not to be confused with the concept of how long it takes for the network to produce new blocks often referred to as Block Time, which isn't very interesting in this context so I'm repurposing the word.
+Matrices are inherently two-dimensional structures, typically described by their dimensions "M by N," where "M" represents the number of rows and "N" the number of columns. Each element within a matrix is accessed via a pair of indices: `i` for the row and `j` for the column, effectively mapping to a unique position within the matrix's keyspace of M × N. In SuiteSparse, these indices are 60-bit unsigned integers, with the maximum index defined by the constant `GxB_INDEX_MAX`, which equals 2<sup>60</sup> (1,152,921,504,606,846,976).
 
-Matrices are two-dimensional and typically have dimensions denoted by "M by N". Each value has a row and column index into the matrix within the "keyspace" of *M by N*. We refer to these as `i` and `j`. The `i` index can be thought of as the id of the start of the edge, and the `j` id of the end. In SuiteSparse these values are 60-bit unsigned integers. The maximum index is the extension constant `GxB_INDEX_MAX` which is 2 to the 60th power (1152921504606846976) for SuiteSparse.
-
-Sparse matrices allow you can use the whole `2**60` keyspace: because matrices are *sparse* they only allocate enough memory to store their elements. The MxN are just guardrails to keep you from going "out of bounds" on your problem, but you can make a matrix that is effectively "unbounded" by setting M and N to `GxB_INDEX_MAX`. SuiteSparse won't allocate a zillion entries, it won't allocate anything in fact until you put stuff in it.  This turns a matrix into an [Associative Array](https://en.wikipedia.org/wiki/Associative_array).
+Sparse matrices leverage this extensive `2**60` keyspace by only allocating memory for non-zero elements, allowing for efficient storage of large, sparse datasets. The defined dimensions M × N serve as boundaries to prevent out-of-bounds operations, but by setting both M and N to `GxB_INDEX_MAX`, one can create an effectively "unbounded" matrix. SuiteSparse optimizes memory usage by not pre-allocating space for the vast keyspace; instead, memory is allocated dynamically as elements are inserted. This functionality transforms a matrix into an [Associative Array](https://en.wikipedia.org/wiki/Associative_array), enabling efficient data storage and retrieval within large-scale computational frameworks. Additionally, this approach facilitates the handling of complex graph structures in cryptocurrency networks, where nodes and connections can grow dynamically without predefined limits.
 
 ![Input Output Adjacency projection](./docs/Blocktime.png)
 
