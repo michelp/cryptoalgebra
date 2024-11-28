@@ -32,13 +32,11 @@ Incidence, however, now requires two steps to get from one vertex to another, bu
 
 ## Blocktime Addressing of Blocks, Transactions, and Outputs
 
-The bitcoin blockchain is an immutable record of past transactions. This immutability confers onto it a *total order* of blocks, transactions, and outputs. This order is exploited by CoinBLAS by storing the rows and columns of matrices *in the same immutable order*. For the purposes of CoinBLAS, this order is called "Blocktime," not to be confused with the concept of how long it takes for the network to produce new blocks often referred to as Block Time, which isn't very interesting in this context so I'm repurposing the word.
+The bitcoin blockchain is an immutable record of past transactions. This immutability confers onto it a *total order* of blocks, transactions, and outputs. This order is exploited by storing the rows and columns of matrices *in the same immutable order*. This order is called "Blocktime," not to be confused with the concept of how long it takes for the network to produce new blocks often referred to as Block Time, which isn't very interesting in this context so I'm repurposing the word.
 
-Matrices are two-dimensional and typically have dimensions denoted by "M by N". Each value has a row and column index into the matrix within the "keyspace" of *M by N*. By convention in GraphBLAS these indexes are called `I` and `J`. The `I` index can be thought of as the id of the start of the edge, and the `J` id of the end. In SuiteSparse these values are 60-bit unsigned integers. The maximum index is the extension constant `GxB_INDEX_MAX` which is 2 to the 60th power (1152921504606846976) for SuiteSparse.
+Matrices are two-dimensional and typically have dimensions denoted by "M by N". Each value has a row and column index into the matrix within the "keyspace" of *M by N*. We refer to these as `i` and `j`. The `i` index can be thought of as the id of the start of the edge, and the `j` id of the end. In SuiteSparse these values are 60-bit unsigned integers. The maximum index is the extension constant `GxB_INDEX_MAX` which is 2 to the 60th power (1152921504606846976) for SuiteSparse.
 
-GraphBLAS has a cool trick where you can use the whole `2**60` keyspace: because matrices are *sparse* they only allocate enough memory to store their elements. The MxN are just guardrails to keep you from going "out of bounds" on your problem, but you can make a matrix that is effectively "unbounded" by setting M and N to `GxB_INDEX_MAX`. SuiteSparse won't allocate a zillion entries, it won't allocate anything in fact until you put stuff in it.
-
-In a sense, this turns a GraphBLAS matrix into an [Associative Array](https://en.wikipedia.org/wiki/Associative_array) which was by design, of course.
+Sparse matrices allow you can use the whole `2**60` keyspace: because matrices are *sparse* they only allocate enough memory to store their elements. The MxN are just guardrails to keep you from going "out of bounds" on your problem, but you can make a matrix that is effectively "unbounded" by setting M and N to `GxB_INDEX_MAX`. SuiteSparse won't allocate a zillion entries, it won't allocate anything in fact until you put stuff in it.  This turns a matrix into an [Associative Array](https://en.wikipedia.org/wiki/Associative_array).
 
 ![Input Output Adjacency projection](./docs/Blocktime.png)
 
@@ -58,7 +56,7 @@ Additional adjacency projections are provided in the next table, and as you'll s
 
 ![Currently defined Adjacency Graphs](./docs/AdjacencyTable.png)
 
-By encoding the block number, transaction index, and output index into the key used to store elements, CoinBLAS stores graphs in a linear fashion, new blocks are always appended onto the "end" of the matrix. Each block is a 2**32 "space" to fill with transactions and outputs, whose ids are always between the start of the current block and the start of the next.
+By encoding the block number, transaction index, and output index into the key used to store elements, Matrices stores graphs in a linear fashion, new blocks are always appended onto the "end" of the matrix. Each block is a 2**32 "space" to fill with transactions and outputs, whose ids are always between the start of the current block and the start of the next.
 
 This time linear construction defines a way of encoding the matrix position of blocks, transactions, and outputs in "block time" so to speak, let's see how to store the bitcoin graph as incidence matrices. A bitcoin transaction can have multiple inputs and outputs. The inputs are the outputs of previous transactions. So our incidence matrices will map "Input to Transaction" on one side and "Transaction to Output" on the other:
 
@@ -69,12 +67,11 @@ To give an idea of how the semiring works, consider a multi-party flow shown bel
 ![Multi-party Incidence Flow](./docs/AdjacentFlow.png)
 
 ## Common Input Ownership
+Any Bitcoin user can generate public key addresses at will, making it theoretically difficult to trace ownership of Bitcoin. However, certain heuristics can be employed to cluster addresses, with one of the most commonly used being common-input-ownership.
 
-Any bitcoin user can make public key addresses at will, so in theory, it's hard to track back to the person who "owns" bitcoin. However, there are some heuristics for clustering objects and one of the most used heuristics is called common-input-ownership.
+To create a Bitcoin transaction, a wallet searches for unspent transaction outputs that satisfy the transaction's value. These inputs are then used in the new transaction, publicly linking them and suggesting they are likely controlled by the same owner. This association implies that inputs used together are likely owned by the same entity, facilitating the analysis and tracking of Bitcoin transactions.
 
-To create a bitcoin transaction, a wallet looks for any unspent transaction outputs to fit the transaction's value. These inputs are then used in the new transaction, publicly associating them with each other as having a common owner. Inputs of a feather spend together.
-
-There's no end to structural and statistical techniques that can be used to cluster addresses, but common-input-ownership is one we can quickly demonstrate with CoinBLAS algebraically using the technique described by [Reid and Harrigan](https://users.encs.concordia.ca/~clark/biblio/bitcoin/Reid%202011.pdf).
+There are many structural and statistical techniques that can be used to cluster addresses, but common-input-ownership is one we can quickly demonstrate algebraically using the technique described by [Reid and Harrigan](https://users.encs.concordia.ca/~clark/biblio/bitcoin/Reid%202011.pdf).
 
 We construct an ancillary network in which each vertex represents a public-key. We connect these vertices with undirected edges, where each edge joins a pair of public keys that are both inputs to the same transaction (and are thus controlled by the same user).
 
@@ -88,17 +85,10 @@ The "SS" matrix now contains a row and a column for every sender and an edge fro
 
 ## Different Structure Same Algebra
 
-Ethereum, unlike Bitcoin, uses an account-based model rather than a UTXO model. Each account has a balance and can send transactions directly to other accounts. Despite this difference, Ethereum's transactions still form a graph that can be represented using incidence matrices.
+Ethereum, unlike Bitcoin, uses an account-based model rather than a UTXO model. Each account has a balance and can send transactions directly to other accounts. Despite this difference, Ethereum's transactions still form a graph that can be represented using incidence matrices. By constructing these matrices, we can analyze the flow of value within the Ethereum network, detect patterns, and gain insights into the structure and behavior of the blockchain.
 
-In Ethereum, each transaction can be seen as an edge connecting two vertices: the sender and the receiver. By constructing incidence matrices where rows represent senders and columns represent receivers, we can analyze the flow of value within the Ethereum network. This approach allows us to apply similar algebraic techniques to study transaction patterns, detect anomalies, and understand the overall structure of the Ethereum blockchain.
+In Ethereum, each transaction can be viewed as an edge connecting two vertices: the sender and the receiver. By constructing incidence matrices where rows represent senders and columns represent receivers, we can analyze the flow of value within the Ethereum network. This method enables us to apply similar algebraic techniques to study transaction patterns, detect anomalies, and understand the overall structure of the Ethereum blockchain. Additionally, this approach helps in identifying relationships and interactions between accounts, providing deeper insights into the network's dynamics.
 
 # The Future
 
-CoinBLAS as it is today is just a starting point, a platform for advanced analysis and computation with modern, high-performance hardware. It provides a few building blocks of Bitcoin graph structure to get started. There is a whole world of complex analysis out there, and the blocks provided by CoinBLAS and sparse matrix linear algebra form the basis for an entirely new way of thinking about Graph analysis.
-
-This is a fun diagram to get into thinking The GraphBLAS way. On the left is a diagram from a recent paper [Fast Graphlet Transform of Sparse Graphs](https://arxiv.org/abs/2007.11111) and on the right are, of course, [Lego blocks](https://en.wikipedia.org/wiki/Lego).
-
-![Thinking in Graphs](./docs/Lego.png)
-
-The idea here is that complex graphs can be broken down into orthogonal spectral components that describe the local structural characteristics of graphs and subgraphs. These spectral components can then form the actual data inputs to more advanced deep and statistical machine learning models. This entire body of work has been done in the language of Linear Algebra and represents an exciting new way of doing component analysis on complex graphs. Future releases of CoinBLAS will include spectral analysis functions like this.
-
+This discussion as it stands today is just a starting point, a platform for advanced analysis and computation with modern, high-performance hardware. It provides a few building blocks of Bitcoin graph structure to get started. There is a whole world of complex analysis out there, and the blocks provided by Linear Algebra form the basis for an entirely new way of thinking about Graph analysis.
