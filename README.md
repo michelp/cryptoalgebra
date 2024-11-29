@@ -52,17 +52,17 @@ Now that we have a way of determining the order of blockchain events and constru
 
 ![CoinBLAS Dimensions](./docs/Dimensions.png)
 
-Each of the above entities is used in the incidence matrices below. These attributes of the `Chain` object are "lazy" and are only computed if they are accessed.
+Each of the above entities is used in the incidence matrices below. Each value in a dimension maps to a matrix row or column id.  Because these graphs are very sparse, in most cases there are large gaps between the rows and columns, but this is easily handled by the GraphBLAS sparse-optimized matrix structures.
 
 ![Currently defined Incidence Graphs](./docs/IncidenceTable.png)
 
-Additional adjacency projections are provided in the next table, and as you'll see below, new adjacencies are easily constructed by multiplying different combinations of incidence matrices and semirings:
+Additional adjacency projections are provided in the next table, and as you'll see below, new adjacencies are easily constructed by multiplying different combinations of incidence matrices and semirings.  Because "unbound" matrices are always commutable, they form the basic building blocks for making all kinds of mathematical statements about entire graphs.
 
 ![Currently defined Adjacency Graphs](./docs/AdjacencyTable.png)
 
-By encoding the block number, transaction index, and output index into the key used to store elements, Matrices stores graphs in a linear fashion, new blocks are always appended onto the "end" of the matrix. Each block is a 2**32 "space" to fill with transactions and outputs, whose ids are always between the start of the current block and the start of the next.
+By encoding the block number, transaction index, and output index into the key used to store elements, matrices store graphs in a linear fashion, with new blocks always appended to the "end" of the matrix. Each block provides a 2<sup>32</sup> "space" to accommodate transactions and outputs, whose IDs always fall between the start of the current block and the start of the next. This property ensures that when iterating through a matrix or submatrix, the rows and columns are always in time-directed order as dictated by the block and blockchain structures themselves.
 
-This time linear construction defines a way of encoding the matrix position of blocks, transactions, and outputs in "block time" so to speak, let's see how to store the bitcoin graph as incidence matrices. A bitcoin transaction can have multiple inputs and outputs. The inputs are the outputs of previous transactions. So our incidence matrices will map "Input to Transaction" on one side and "Transaction to Output" on the other:
+This directed construction provides a method for encoding the matrix positions of blocks, transactions, and outputs within a "blocktime" framework. By doing so, we can effectively represent the Bitcoin graph using incidence matrices. In the Bitcoin network, a transaction can have multiple inputs and outputs, with each input referencing the output of a previous transaction. Consequently, our incidence matrices will map "Input to Transaction" on one axis and "Transaction to Output" on the other.
 
 ![Block Incidence Flow](./docs/TxFlow.png)
 
