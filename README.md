@@ -1,9 +1,3 @@
----
-title: The Algebra of Cryptocurrency
-author: Michel Pelletier
-date: today
----
-
 # The Linear Algebra of Cryptocurrency
 
 There are numerous mathematical tools utilized in cryptocurrency, particularly in the realms of cryptographic functionality and transaction security. Linear Algebra is an additional valuable tool that can be applied to the graph structures inherent in transaction networks.
@@ -85,7 +79,7 @@ We'll call this new relationship "SS" for Sender to Sender. The result we want i
 
 The "SS" matrix now contains a row and a column for every sender and an edge from every sender to every other sender they have shared transactions with as the sender. The `select()` function is used to remove the diagonal "self-edges" that every sender would end up with back to themselves and are uninteresting for this problem. The `PLUS_FIRST` semiring says to sum common edges between any two senders but just using the left matrix, since the values in the transpose of the matrix are redundant.
 
-# Ethereum
+# Ethereum (WIP)
 
 ## Different Structure Same Algebra
 
@@ -96,3 +90,5 @@ In Ethereum, each transaction can be viewed as an edge connecting two vertices: 
 # The Future
 
 This discussion as it stands today is just a starting point, a platform for advanced analysis and computation with modern, high-performance hardware. It provides a few building blocks of Bitcoin graph structure to get started. There is a whole world of complex analysis out there, and the blocks provided by Linear Algebra form the basis for an entirely new way of thinking about Graph analysis.
+
+![Graphlets and Legos](./docs/Lego.png)
